@@ -1,43 +1,48 @@
+import express from "express";
 // 生成した Prisma Client をインポート
-// このClientは、`npx prisma migrate dev` を実行したときに自動で生成・更新されるものよ
 import { PrismaClient } from "./generated/prisma/client";
 
-// PrismaClientのインスタンスを作成する
 const prisma = new PrismaClient({
-  // Prismaが実行するクエリをコンソールにログ出力するための設定
+  // クエリが実行されたときに実際に実行したクエリをログに表示する設定
   log: ["query"],
 });
+const app = express();
 
-// データベース操作は非同期で行われるため、async/await を使ったメイン関数を定義する
-async function main() {
-  console.log("Prisma Client を初期化しました。");
+// 環境変数が設定されていれば、そこからポート番号を取得する。環境変数に設定がなければ 8888 を使用する。
+const PORT = process.env.PORT || 8888;
 
-  // データベースに接続して、全てのユーザーを取得する
-  const usersBefore = await prisma.user.findMany();
-  console.log("Before ユーザー一覧:", usersBefore);
+// EJS をテンプレートエンジンとして設定するわ
+app.set("view engine", "ejs");
+// EJSのテンプレートファイルが置かれているディレクトリを指定
+app.set("views", "./views");
 
-  // 新しいユーザーを1件作成する
-  const newUser = await prisma.user.create({
-    data: {
-      name: `新しいユーザー ${new Date().toISOString()}`,
-    },
-  });
-  console.log("新しいユーザーを追加しました:", newUser);
+// HTMLのフォームから送信されたデータ（POSTリクエストのボディ）を解析できるようにするおまじない
+app.use(express.urlencoded({ extended: true }));
 
-  // もう一度、全てのユーザーを取得して、追加されたことを確認する
-  const usersAfter = await prisma.user.findMany();
-  console.log("After ユーザー一覧:", usersAfter);
-}
+// ルートパス ("/") へのGETリクエストに対する処理
+app.get("/", async (req, res) => {
+  // データベースから全てのユーザーを取得
+  const users = await prisma.user.findMany();
+  // 'index.ejs' を使ってHTMLを生成し、'users'という名前でデータを渡す
+  res.render("index", { users });
+});
 
-// main 関数を実行する
-main()
-  .catch((e) => {
-    // もしエラーが発生したら、内容を表示して異常終了する
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    // 処理が成功しても失敗しても、必ず最後にデータベースとの接続を切断する
-    await prisma.$disconnect();
-    console.log("Prisma Client を切断しました。");
-  });
+// "/users" へのPOSTリクエストに対する処理（ユーザー追加）
+app.post("/users", async (req, res) => {
+  // フォームの 'name' フィールドから送信された値を取得
+  const name = req.body.name;
+  if (name) {
+    // データベースに新しいユーザーを作成
+    const newUser = await prisma.user.create({
+      data: { name },
+    });
+    console.log("新しいユーザーを追加しました:", newUser);
+  }
+  // 処理が終わったら、ルートパスにリダイレクト（ページを再読み込みさせる）
+  res.redirect("/");
+});
+
+// サーバーを指定したポートで起動する
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
