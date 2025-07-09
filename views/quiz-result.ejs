@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>クイズ結果</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+  </head>
+  <body>
+    <header>
+      <% if (isCorrect) { %>
+      <h1>🎉 正解！ 🎉</h1>
+      <% } else { %>
+      <h1>😢 残念、不正解… 😢</h1>
+      <% } %>
+    </header>
+    <main>
+      <p><strong>問題:</strong> <%= quiz.question %></p>
+      <p><strong>解説:</strong> <%= quiz.explanation %></p>
+    </main>
+    <footer>
+      <a href="/days">コース一覧に戻る</a>
+    </footer>
+  </body>
+</html>

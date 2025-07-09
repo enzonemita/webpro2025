@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>学習コース一覧</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+  </head>
+  <body>
+    <header>
+      <h1>学習コース一覧</h1>
+      <p>学びたいコースを選んでください。</p>
+    </header>
+    <main>
+      <% days.forEach(day => { %>
+      <article>
+        <h3>
+          <a href="/days/<%= day.dayNumber %>">
+            Day <%= day.dayNumber %>: <%= day.title %>
+          </a>
+        </h3>
+        <p><%= day.description %></p>
+      </article>
+      <% }) %>
+    </main>
+  </body>
+</html>

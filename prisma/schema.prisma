@@ -19,3 +19,47 @@ model User {
   name  String
   age   Int?    // 年齢を追加。? をつけると、null (未設定) も許容されるようになるの
 }
+
+// prisma/schema.prisma
+
+// 今あるUserモデルは一旦そのままでいいわ
+
+// 「Day1」「Day2」のような各学習日を表すモデル
+model Day {
+  id          Int      @id @default(autoincrement())
+  dayNumber   Int      @unique // Day番号 (1, 2, 3...)
+  title       String   // その日のタイトル (例: 「株のチャートの読み方」)
+  description String   // その日の学習内容の概要
+  
+  // このDayに所属するレッスンがたくさんある、という関係性を表す
+  lessons     Lesson[]
+}
+
+// 各Dayの中の具体的な学習コンテンツを表すモデル
+model Lesson {
+  id        Int    @id @default(autoincrement())
+  title     String // レッスンの小タイトル (例: 「ローソク足とは？」)
+  content   String // レッスンの本文 (ここに詳しい解説を書く)
+  
+  // このレッスンがどのDayに所属するかを表す
+  dayId     Int
+  day       Day    @relation(fields: [dayId], references: [id])
+  
+  // このレッスンに紐づくクイズがたくさんある
+  quizzes   Quiz[]
+}
+
+// 確認問題を表すモデル
+model Quiz {
+  id         Int      @id @default(autoincrement())
+  question   String   // 問題文
+  option1    String   // 選択肢1
+  option2    String   // 選択肢2
+  option3    String   // 選択肢3
+  correctOption Int   // 正解の選択肢番号 (1, 2, 3)
+  explanation String  // 解説文
+  
+  // このクイズがどのレッスンに紐づくか
+  lessonId   Int
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+}

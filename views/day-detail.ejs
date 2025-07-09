@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Day <%= day.dayNumber %>: <%= day.title %></title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Day <%= day.dayNumber %>: <%= day.title %></h1>
+      <p><%= day.description %></p>
+    </header>
+
+    <main>
+      <h2>この日のレッスン</h2>
+      <% if (day.lessons.length > 0) { %> <% day.lessons.forEach(lesson => { %>
+      <article>
+        <h3><%= lesson.title %></h3>
+        <p><%- lesson.content %></p>
+        <% if (lesson.quizzes.length > 0) { %> <% const quiz =
+        lesson.quizzes[0]; %>
+        <div
+          class="quiz"
+          style="
+            margin-top: 2rem;
+            border-top: 1px solid #ccc;
+            padding-top: 1rem;
+          "
+        >
+          <h4>確認問題！</h4>
+          <p><%= quiz.question %></p>
+          <form action="/quiz/answer" method="post">
+            <input type="hidden" name="quizId" value="<%= quiz.id %>" />
+
+            <input
+              type="radio"
+              name="answer"
+              value="1"
+              id="q<%= quiz.id %>_o1"
+              required
+            />
+            <label for="q<%= quiz.id %>_o1"><%= quiz.option1 %></label><br />
+
+            <input
+              type="radio"
+              name="answer"
+              value="2"
+              id="q<%= quiz.id %>_o2"
+            />
+            <label for="q<%= quiz.id %>_o2"><%= quiz.option2 %></label><br />
+
+            <input
+              type="radio"
+              name="answer"
+              value="3"
+              id="q<%= quiz.id %>_o3"
+            />
+            <label for="q<%= quiz.id %>_o3"><%= quiz.option3 %></label
+            ><br /><br />
+
+            <button type="submit">答え合わせ</button>
+          </form>
+        </div>
+        <% } %>
+      </article>
+      <% }) %> <% } else { %>
+      <p>この日のレッスンはまだ準備中です。</p>
+      <% } %>
+    </main>
+
+    <footer>
+      <a href="/days">コース一覧に戻る</a>
+    </footer>
+  </body>
+</html>

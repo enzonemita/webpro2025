@@ -50,6 +50,60 @@ app.post("/users", async (req, res) => {
   res.redirect("/"); // ユーザー追加後、一覧ページにリダイレクト
 });
 
+// 学習日の一覧ページ
+app.get("/days", async (req, res) => {
+  const days = await prisma.day.findMany({
+    orderBy: { dayNumber: "asc" }, // 日付順に並べると親切ね
+  });
+  // 'days.ejs' という新しいテンプレートを呼び出して、取得したデータを渡す
+  res.render("days", { days });
+});
+
+// 各学習日の詳細ページ
+app.get("/days/:dayNumber", async (req, res) => {
+  // URLからdayNumberを取得する (例: "/days/1" なら 1 が取れる)
+  const dayNumber = Number(req.params.dayNumber);
+
+  // 指定されたdayNumberのDayを、それに紐づくLessonも一緒に取得する
+  // prisma.day.findUnique の部分
+  const day = await prisma.day.findUnique({
+    where: { dayNumber: dayNumber },
+    include: {
+      lessons: {
+        // lessonsを取得するときに...
+        include: {
+          quizzes: true, // ...それに紐づくquizzesも一緒に取得する
+        },
+      },
+    },
+  });
+
+  // もし指定された番号のDayが見つからなかったら、404エラーを返す
+  if (!day) {
+    return res.status(404).send("その学習日は見つかりませんでした。");
+  }
+
+  // 'day-detail.ejs'という新しいテンプレートを呼び出して、取得したデータを渡す
+  res.render("day-detail", { day });
+});
+
+// クイズの回答を処理する
+app.post("/quiz/answer", async (req, res) => {
+  const quizId = Number(req.body.quizId);
+  const userAnswer = Number(req.body.answer);
+
+  const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+
+  if (!quiz) {
+    return res.status(404).send("クイズが見つかりません。");
+  }
+
+  const isCorrect = userAnswer === quiz.correctOption;
+
+  // 'quiz-result.ejs' を呼び出して、クイズの情報と正解かどうかを渡す
+  res.render("quiz-result", { quiz, isCorrect });
+});
+
 // サーバーを指定したポートで起動する
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
