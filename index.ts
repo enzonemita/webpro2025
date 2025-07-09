@@ -19,12 +19,9 @@ app.set("views", "./views");
 // HTMLのフォームから送信されたデータ（POSTリクエストのボディ）を解析できるようにするおまじない
 app.use(express.urlencoded({ extended: true }));
 
-// ルートパス ("/") へのGETリクエストに対する処理
 app.get("/", async (req, res) => {
-  // データベースから全てのユーザーを取得
-  const users = await prisma.user.findMany();
-  // 'index.ejs' を使ってHTMLを生成し、'users'という名前でデータを渡す
-  res.render("index", { users });
+  // "/days" のページに自動で転送（リダイレクト）する
+  res.redirect("/days");
 });
 
 app.post("/users", async (req, res) => {
